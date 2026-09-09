@@ -17,12 +17,9 @@ cp .env.example .env
 `
 ```bash
 python run.py
-```
+
 
 เปิดเบราว์เซอร์ไปที่ `http://localhost:5000`
-
-```
-```
 ขอบคุณครับครูนัท
 ```
 
