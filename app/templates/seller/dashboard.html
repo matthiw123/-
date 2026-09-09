@@ -48,7 +48,7 @@
         <td>
           <form method="post" action="{{ url_for('seller.update_order_status', item_id=oi.id) }}" class="flex gap-1">
             <input type="hidden" name="order_id" value="{{ oi.order_id }}">
-            <select name="status" class="border rounded px-1 py-0.5 text-xs">
+            <select name="status" class="border dark:border-gray-600 rounded px-1 py-0.5 text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
               <option value="paid">ชำระเงินแล้ว</option>
               <option value="shipped">จัดส่งแล้ว</option>
               <option value="delivered">ส่งถึงแล้ว</option>

@@ -13,6 +13,14 @@ def generate_fake_code():
     return f"{part()}-{part()}-{part()}"
 
 
+def effective_price(product):
+    """คืนราคาหลังหักส่วนลด (ถ้ามี)"""
+    if not product:
+        return 0
+    discount = product.get("discount_percent") or 0
+    return round(product["price"] * (1 - discount / 100), 2)
+
+
 @bp.route("/api/search-suggest")
 def search_suggest():
     """คืนรายชื่อเกมที่ตรงกับคำค้นหา สำหรับ dropdown อัตโนมัติในช่องค้นหา"""
@@ -91,7 +99,7 @@ def home():
 def get_best_sellers(supabase, limit=8):
     """คำนวณเกมขายดีจากยอดขายรวมใน order_items"""
     order_items = supabase.table("order_items").select(
-        "product_id, quantity, products(name, price, status, product_images(image_url, is_cover))"
+        "product_id, quantity, products(name, price, discount_percent, status, product_images(image_url, is_cover))"
     ).execute().data
 
     sales = {}
@@ -147,14 +155,14 @@ def product_detail(product_id):
 def cart():
     supabase = get_supabase()
     items = supabase.table("cart_items").select(
-        "*, products(name, price, stock, product_images(image_url, is_cover))"
+        "*, products(name, price, discount_percent, stock, product_images(image_url, is_cover))"
     ).eq("buyer_id", session["user_id"]).execute().data
 
     # สินค้าบางชิ้นอาจถูกผู้ขายแก้ไข ทำให้สถานะกลับไปเป็น "รอตรวจสอบ" ชั่วคราว
     # ระบบจะมองไม่เห็นสินค้านั้น (products เป็น None) ต้องกรองออกจากการคำนวณ
     available_items = [item for item in items if item.get("products")]
     unavailable_count = len(items) - len(available_items)
-    total = sum(item["quantity"] * item["products"]["price"] for item in available_items)
+    total = sum(item["quantity"] * effective_price(item["products"]) for item in available_items)
 
     return render_template(
         "buyer/cart.html", items=available_items, total=total,
@@ -236,7 +244,7 @@ def checkout():
         # หมายเหตุ: payment_method/payment_code เป็นแค่การจำลอง ไม่ได้บันทึกเก็บไว้ที่ไหน
 
         items = supabase.table("cart_items").select(
-            "*, products(price, stock, seller_id)"
+            "*, products(price, discount_percent, stock, seller_id)"
         ).eq("buyer_id", session["user_id"]).execute().data
 
         items = [i for i in items if i.get("products")]  # กันสินค้าที่มองไม่เห็นชั่วคราว (รอตรวจสอบใหม่)
@@ -245,7 +253,7 @@ def checkout():
             flash("ตะกร้าว่างเปล่า หรือสินค้าในตะกร้าไม่พร้อมจำหน่ายแล้ว", "warning")
             return redirect(url_for("buyer.cart"))
 
-        total = sum(i["quantity"] * i["products"]["price"] for i in items)
+        total = sum(i["quantity"] * effective_price(i["products"]) for i in items)
 
         order = supabase.table("orders").insert({
             "buyer_id": session["user_id"],
@@ -259,7 +267,7 @@ def checkout():
                 "product_id": item["product_id"],
                 "seller_id": item["products"]["seller_id"],
                 "quantity": item["quantity"],
-                "unit_price": item["products"]["price"],
+                "unit_price": effective_price(item["products"]),
                 "activation_code": generate_fake_code(),
             }).execute()
             # ลดสต๊อกสินค้า (ใช้ฟังก์ชันเฉพาะ เพราะผู้ซื้อไม่มีสิทธิ์แก้ตาราง products ตรงๆ)
@@ -276,10 +284,10 @@ def checkout():
         return redirect(url_for("buyer.order_history"))
 
     items = supabase.table("cart_items").select(
-        "*, products(name, price)"
+        "*, products(name, price, discount_percent)"
     ).eq("buyer_id", session["user_id"]).execute().data
     items = [i for i in items if i.get("products")]
-    total = sum(i["quantity"] * i["products"]["price"] for i in items)
+    total = sum(i["quantity"] * effective_price(i["products"]) for i in items)
     return render_template("buyer/checkout.html", items=items, total=total)
 
 

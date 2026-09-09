@@ -33,6 +33,14 @@ def create_app():
         return images[0]
 
     @app.template_global()
+    def effective_price(product):
+        """คืนราคาหลังหักส่วนลด (ถ้ามี)"""
+        if not product:
+            return 0
+        discount = product.get("discount_percent") or 0
+        return round(product["price"] * (1 - discount / 100), 2)
+
+    @app.template_global()
     def youtube_embed_url(url):
         """แปลงลิงก์ YouTube รูปแบบต่างๆ ให้เป็นลิงก์สำหรับฝัง iframe คืนค่า None ถ้าไม่ใช่ลิงก์ YouTube"""
         if not url:

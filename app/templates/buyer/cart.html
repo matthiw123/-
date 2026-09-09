@@ -20,7 +20,11 @@
     </div>
     <div class="flex-1">
       <p class="font-medium">{{ item.products.name }}</p>
-      <p class="text-red-700 dark:text-red-400">฿{{ "%.2f"|format(item.products.price) }} × {{ item.quantity }} = ฿{{ "%.2f"|format(item.products.price * item.quantity) }}</p>
+      <p class="text-red-700 dark:text-red-400">
+        ฿{{ "%.2f"|format(effective_price(item.products)) }}
+        {% if item.products.discount_percent %}<span class="text-gray-400 dark:text-gray-500 line-through text-xs">฿{{ "%.2f"|format(item.products.price) }}</span>{% endif %}
+        × {{ item.quantity }} = ฿{{ "%.2f"|format(effective_price(item.products) * item.quantity) }}
+      </p>
     </div>
 
     <!-- ปุ่ม +/- ปรับจำนวน -->

@@ -50,7 +50,15 @@
     </p>
     {% endif %}
 
+    {% if product.discount_percent %}
+    <div class="flex items-center gap-2 mt-4">
+      <p class="text-3xl text-red-700 font-bold">฿{{ "%.2f"|format(effective_price(product)) }}</p>
+      <p class="text-gray-400 dark:text-gray-500 line-through">฿{{ "%.2f"|format(product.price) }}</p>
+      <span class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">-{{ product.discount_percent }}%</span>
+    </div>
+    {% else %}
     <p class="text-3xl text-red-700 font-bold mt-4">฿{{ "%.2f"|format(product.price) }}</p>
+    {% endif %}
     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">คงเหลือ {{ product.stock }} ชิ้น</p>
 
     <!-- ปุ่มซื้อ/เพิ่มตะกร้า อยู่ข้างรูป -->
@@ -107,7 +115,7 @@
           <input type="radio" name="recommended" value="no"> 👎 ไม่แนะนำ
         </label>
       </div>
-      <textarea name="comment" rows="2" placeholder="เขียนรีวิว..." class="w-full border rounded px-3 py-2 text-sm"></textarea>
+      <textarea name="comment" rows="2" placeholder="เขียนรีวิว..." class="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"></textarea>
       <button type="submit" class="mt-2 bg-red-600 text-white px-4 py-1.5 rounded text-sm hover:bg-red-700">ส่งรีวิว</button>
     </form>
     {% else %}

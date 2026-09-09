@@ -17,11 +17,11 @@
     </div>
 
     <label class="block text-sm font-medium mb-1">ชื่อที่แสดง</label>
-    <input type="text" name="full_name" value="{{ profile.full_name }}" required class="w-full border rounded px-3 py-2 mb-4">
+    <input type="text" name="full_name" value="{{ profile.full_name }}" required class="w-full border dark:border-gray-600 rounded px-3 py-2 mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
 
     {% if profile.role == 'seller' %}
     <label class="block text-sm font-medium mb-1">ชื่อร้านค้า</label>
-    <input type="text" name="shop_name" value="{{ profile.shop_name or '' }}" class="w-full border rounded px-3 py-2 mb-4">
+    <input type="text" name="shop_name" value="{{ profile.shop_name or '' }}" class="w-full border dark:border-gray-600 rounded px-3 py-2 mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
     {% endif %}
 
     <label class="block text-sm font-medium mb-2">เลือกรูปโปรไฟล์ (เล่นๆ)</label>

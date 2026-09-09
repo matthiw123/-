@@ -9,7 +9,7 @@
     {% for item in items %}
     <div class="flex justify-between py-2 text-sm">
       <span>{{ item.products.name }} × {{ item.quantity }}</span>
-      <span>฿{{ "%.2f"|format(item.products.price * item.quantity) }}</span>
+      <span>฿{{ "%.2f"|format(effective_price(item.products) * item.quantity) }}</span>
     </div>
     {% endfor %}
   </div>
@@ -36,7 +36,7 @@
 
     <label class="block text-sm font-medium mb-1">รหัสยืนยันการชำระเงิน (6 หลัก)</label>
     <input type="text" name="payment_code" inputmode="numeric" pattern="\d{6}" maxlength="6" required
-           placeholder="เช่น 123456" class="w-full border rounded px-3 py-2 mb-1 tracking-widest text-center text-lg">
+           placeholder="เช่น 123456" class="w-full border dark:border-gray-600 rounded px-3 py-2 mb-1 tracking-widest text-center text-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
     <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">* หน้านี้เป็นการจำลองระบบชำระเงิน กรอกตัวเลข 6 หลักอะไรก็ได้เพื่อยืนยัน (ไม่มีการเก็บข้อมูลนี้ไว้)</p>
 
     <button type="submit" class="w-full bg-red-600 text-white py-2.5 rounded hover:bg-red-700">ยืนยันการชำระเงิน</button>

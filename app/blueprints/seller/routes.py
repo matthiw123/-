@@ -58,6 +58,7 @@ def add_product():
         category_id = request.form.get("category_id") or None
         condition = request.form.get("condition", "used")
         video_url = request.form.get("video_url", "").strip() or None
+        discount_percent = int(request.form.get("discount_percent", 0))
 
         product = supabase.table("products").insert({
             "seller_id": session["user_id"],
@@ -68,6 +69,7 @@ def add_product():
             "category_id": category_id,
             "condition": condition,
             "video_url": video_url,
+            "discount_percent": discount_percent,
             "status": "pending",  # ต้องรอแอดมินอนุมัติก่อน
         }).execute().data[0]
 
@@ -123,6 +125,7 @@ def edit_product(product_id):
             "category_id": request.form.get("category_id") or None,
             "condition": request.form.get("condition", "used"),
             "video_url": request.form.get("video_url", "").strip() or None,
+            "discount_percent": int(request.form.get("discount_percent", 0)),
             "status": "pending",  # แก้ไขแล้วต้องรออนุมัติใหม่
         }).eq("id", product_id).execute()
 
