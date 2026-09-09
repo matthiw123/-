@@ -1,0 +1,51 @@
+{% extends "shared/base.html" %}
+{% block title %}คำสั่งซื้อของฉัน{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">คำสั่งซื้อของฉัน</h1>
+
+{% set status_label = {'pending': 'รอดำเนินการ', 'paid': 'ชำระเงินแล้ว', 'shipped': 'จัดส่งแล้ว', 'delivered': 'ส่งถึงแล้ว', 'cancelled': 'ยกเลิก'} %}
+{% set status_color = {'pending': 'bg-yellow-100 text-yellow-800', 'paid': 'bg-blue-100 text-blue-800',
+                        'shipped': 'bg-purple-100 text-purple-800', 'delivered': 'bg-green-100 text-green-800',
+                        'cancelled': 'bg-red-100 text-red-800'} %}
+
+{% if orders %}
+<div class="space-y-4">
+  {% for order in orders %}
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <div class="flex justify-between items-center mb-3">
+      <span class="text-sm text-gray-500 dark:text-gray-400">คำสั่งซื้อ #{{ order.id[:8] }} · {{ order.created_at[:10] }}</span>
+      <span class="text-xs px-2 py-1 rounded-full {{ status_color.get(order.status, 'bg-gray-100 dark:bg-gray-700') }}">
+        {{ status_label.get(order.status, order.status) }}
+      </span>
+    </div>
+    <div class="divide-y">
+      {% for oi in order.order_items %}
+      <div class="flex items-center gap-3 py-2">
+        <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden shrink-0">
+          {% if oi.products.product_images %}
+            <img src="{{ cover_image(oi.products.product_images).image_url }}" class="object-cover w-full h-full">
+          {% endif %}
+        </div>
+        <div class="flex-1 text-sm">
+          <p>{{ oi.products.name }}</p>
+          <p class="text-gray-500 dark:text-gray-400">{{ oi.quantity }} × ฿{{ "%.2f"|format(oi.unit_price) }}</p>
+          {% if oi.activation_code %}
+          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            โค้ดยืนยัน (จำลอง ใช้แลกเกมจริงไม่ได้): <span class="font-mono text-gray-600 dark:text-gray-300">{{ oi.activation_code }}</span>
+          </p>
+          {% endif %}
+        </div>
+        {% if order.status == 'delivered' %}
+        <a href="{{ url_for('buyer.product_detail', product_id=oi.product_id) }}#review" class="text-red-700 text-xs hover:underline">รีวิว</a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <p class="text-right font-bold mt-2">รวม: ฿{{ "%.2f"|format(order.total_amount) }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-center text-gray-500 dark:text-gray-400 py-16">ยังไม่มีคำสั่งซื้อ</p>
+{% endif %}
+{% endblock %}

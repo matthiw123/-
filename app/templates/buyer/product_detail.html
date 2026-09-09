@@ -1,0 +1,152 @@
+{% extends "shared/base.html" %}
+{% block title %}{{ product.name }} - ญ{% endblock %}
+{% block content %}
+
+<!-- พื้นหลังของหน้านี้เปลี่ยนไปตามรูปของเกมที่กำลังดูอยู่ (เบลอ+จาง ไม่บังเนื้อหา) -->
+{% if product.product_images %}
+<div class="fixed inset-0 -z-10 overflow-hidden">
+  <img src="{{ cover_image(product.product_images).image_url }}" class="w-full h-full object-cover blur-2xl scale-110 opacity-50 dark:opacity-60">
+  <div class="absolute inset-0 bg-gray-50/60 dark:bg-gray-900/55"></div>
+</div>
+{% endif %}
+
+<!-- แถวบน: รูปภาพ + ปุ่มซื้อ/เพิ่มตะกร้า อยู่ข้างกัน -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col md:flex-row gap-6">
+  <div class="md:w-1/2">
+    <div class="aspect-video bg-gray-100 dark:bg-gray-700 rounded overflow-hidden flex items-center justify-center">
+      {% if product.product_images %}
+        <img id="main-image" src="{{ cover_image(product.product_images).image_url }}" class="object-cover w-full h-full">
+      {% else %}
+        <span class="text-gray-400 dark:text-gray-500">ไม่มีรูป</span>
+      {% endif %}
+    </div>
+    {% if product.product_images|length > 1 %}
+    <div class="flex gap-2 mt-2 overflow-x-auto">
+      {% for img in product.product_images %}
+        <img src="{{ img.image_url }}" onclick="document.getElementById('main-image').src = this.src"
+             class="w-24 aspect-video object-cover rounded border cursor-pointer hover:border-red-600">
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="md:w-1/2 flex flex-col">
+    <div class="flex items-center gap-2">
+      <h1 class="text-2xl font-bold">{{ product.name }}</h1>
+      <span class="text-xs px-2 py-0.5 rounded-full {{ 'bg-green-100 text-green-700' if product.condition == 'new' else 'bg-blue-100 text-blue-700' }}">
+        {{ 'มือ 1 (ใหม่)' if product.condition == 'new' else 'มือ 2 (มือสอง)' }}
+      </span>
+    </div>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+      ร้าน {{ product.profiles.shop_name or product.profiles.full_name }} · ประเภท {{ product.categories.name if product.categories else '-' }}
+    </p>
+
+    {% if total_reviews %}
+    <p class="text-sm mt-2">
+      <span class="font-semibold {{ 'text-green-600' if recommend_pct >= 70 else 'text-yellow-600' if recommend_pct >= 40 else 'text-red-600' }}">
+        {{ recommend_pct }}% แนะนำ
+      </span>
+      <span class="text-gray-400 dark:text-gray-500">({{ total_reviews }} รีวิว)</span>
+    </p>
+    {% endif %}
+
+    <p class="text-3xl text-red-700 font-bold mt-4">฿{{ "%.2f"|format(product.price) }}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">คงเหลือ {{ product.stock }} ชิ้น</p>
+
+    <!-- ปุ่มซื้อ/เพิ่มตะกร้า อยู่ข้างรูป -->
+    {% if product.stock > 0 %}
+    <form method="post" action="{{ url_for('buyer.add_to_cart', product_id=product.id) }}" class="mt-6">
+      <input type="hidden" name="quantity" value="1">
+      <button type="submit" class="bg-red-600 hover:bg-red-700 transition text-white px-6 py-2.5 rounded font-semibold">เพิ่มลงตะกร้า</button>
+      <p class="text-xs text-gray-400 mt-2">ปรับจำนวนได้ในหน้าตะกร้า</p>
+    </form>
+    {% else %}
+      <p class="mt-6 text-red-500 font-medium">สินค้าหมด</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- คำบรรยายสินค้า อยู่ด้านล่างปุ่มซื้อ (เต็มความกว้าง) -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mt-4">
+  <h2 class="font-semibold mb-2">รายละเอียดเกม</h2>
+  <p class="text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ product.description or 'ไม่มีคำอธิบายสินค้า' }}</p>
+</div>
+
+{% if product.video_url %}
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mt-4">
+  <h2 class="font-semibold mb-2">วิดีโอตัวอย่าง / รีวิว</h2>
+  {% set embed_url = youtube_embed_url(product.video_url) %}
+  {% if embed_url %}
+    <div class="aspect-video">
+      <iframe src="{{ embed_url }}" class="w-full h-full rounded" allowfullscreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+    </div>
+  {% else %}
+    <a href="{{ product.video_url }}" target="_blank" rel="noopener" class="text-red-600 hover:underline text-sm">
+      🎬 ดูวิดีโอ ({{ product.video_url }})
+    </a>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Reviews -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mt-6">
+  <h2 class="text-xl font-bold mb-4">รีวิวสินค้า ({{ reviews|length }})</h2>
+
+  {% if current_user and current_user.role == 'buyer' %}
+    {% if already_reviewed %}
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 border-b pb-6">คุณรีวิวเกมนี้ไปแล้ว ขอบคุณครับ 🙏</p>
+    {% elif can_review %}
+    <form method="post" action="{{ url_for('buyer.add_review', product_id=product.id) }}" class="mb-6 border-b pb-6">
+      <label class="text-sm font-medium block mb-2">คุณแนะนำเกมนี้ไหม?</label>
+      <div class="flex items-center gap-4 mb-2">
+        <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+          <input type="radio" name="recommended" value="yes" checked> 👍 แนะนำ
+        </label>
+        <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+          <input type="radio" name="recommended" value="no"> 👎 ไม่แนะนำ
+        </label>
+      </div>
+      <textarea name="comment" rows="2" placeholder="เขียนรีวิว..." class="w-full border rounded px-3 py-2 text-sm"></textarea>
+      <button type="submit" class="mt-2 bg-red-600 text-white px-4 py-1.5 rounded text-sm hover:bg-red-700">ส่งรีวิว</button>
+    </form>
+    {% else %}
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 border-b pb-6">ต้องซื้อเกมนี้ก่อนถึงจะรีวิวได้ครับ</p>
+    {% endif %}
+  {% endif %}
+
+  {% if reviews %}
+    {% for r in reviews %}
+    <div class="border-b py-3">
+      <div class="flex items-center gap-2">
+        <span class="font-medium text-sm">{{ r.profiles.full_name }}</span>
+        <span class="text-sm">
+          {% if r.recommended %}
+            <span class="text-green-600">👍 แนะนำ</span>
+          {% else %}
+            <span class="text-red-600">👎 ไม่แนะนำ</span>
+          {% endif %}
+        </span>
+      </div>
+      {% if r.comment %}<p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ r.comment }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-gray-400 dark:text-gray-500 text-sm">ยังไม่มีรีวิว</p>
+  {% endif %}
+</div>
+
+<!-- Modal: ถามหลังเพิ่มลงตะกร้าแล้ว ว่าจะไปจ่ายเงินเลยหรือเลือกซื้อต่อ -->
+{% if request.args.get('added') %}
+<div id="added-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+    <p class="text-lg font-bold mb-1">🛒 เพิ่มลงตะกร้าแล้ว!</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">ต้องการชำระเงินเลย หรือเลือกซื้อเกมอื่นต่อ?</p>
+    <div class="flex gap-3">
+      <a href="{{ url_for('buyer.cart') }}" class="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700 text-sm">ไปที่ตะกร้า / จ่ายเงิน</a>
+      <a href="{{ url_for('buyer.home') }}" class="flex-1 border border-gray-300 dark:border-gray-600 py-2 rounded hover:bg-gray-50 dark:bg-gray-900 text-sm">เลือกซื้อต่อ</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

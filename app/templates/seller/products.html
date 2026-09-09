@@ -1,0 +1,41 @@
+{% extends "shared/base.html" %}
+{% block title %}สินค้าของฉัน{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">สินค้าของฉัน</h1>
+  <a href="{{ url_for('seller.add_product') }}" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">+ เพิ่มสินค้า</a>
+</div>
+
+{% set status_label = {'pending': 'รอตรวจสอบ', 'approved': 'อนุมัติแล้ว', 'rejected': 'ถูกปฏิเสธ'} %}
+{% set status_color = {'pending': 'bg-yellow-100 text-yellow-800', 'approved': 'bg-green-100 text-green-800', 'rejected': 'bg-red-100 text-red-800'} %}
+
+{% if products %}
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+  {% for p in products %}
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div class="aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+      {% if p.product_images %}
+        <img src="{{ cover_image(p.product_images).image_url }}" class="object-cover w-full h-full">
+      {% else %}
+        <span class="text-gray-400 dark:text-gray-500 text-sm">ไม่มีรูป</span>
+      {% endif %}
+    </div>
+    <div class="p-3">
+      <p class="text-sm font-medium line-clamp-2 h-10">{{ p.name }}</p>
+      <p class="text-red-700 font-bold">฿{{ "%.2f"|format(p.price) }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mb-2">สต๊อก {{ p.stock }}</p>
+      <span class="text-xs px-2 py-0.5 rounded-full {{ status_color.get(p.status) }}">{{ status_label.get(p.status) }}</span>
+      <div class="flex gap-2 mt-2">
+        <a href="{{ url_for('seller.edit_product', product_id=p.id) }}" class="text-xs text-blue-600 hover:underline">แก้ไข</a>
+        <form method="post" action="{{ url_for('seller.delete_product', product_id=p.id) }}" onsubmit="return confirm('ยืนยันลบสินค้านี้?')">
+          <button type="submit" class="text-xs text-red-600 hover:underline">ลบ</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-center text-gray-500 dark:text-gray-400 py-16">ยังไม่มีสินค้า เริ่มเพิ่มสินค้าแรกของคุณเลย!</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "shared/base.html" %}
+{% block title %}หน้าแรก - ญ{% endblock %}
+{% block content %}
+{% if featured %}
+<a href="{{ url_for('buyer.product_detail', product_id=featured.id) }}"
+   class="relative block rounded-lg overflow-hidden mb-6 shadow-lg group h-64 md:h-80">
+  <img src="{{ cover_image(featured.product_images).image_url }}"
+       class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500">
+  <div class="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent"></div>
+  <div class="relative h-full flex flex-col justify-end p-6 md:p-10 text-white max-w-xl">
+    <p class="text-red-500 font-semibold text-sm mb-1">🔥 เกมแนะนำประจำสัปดาห์</p>
+    <h1 class="text-2xl md:text-4xl font-extrabold mb-2">{{ featured.name }}</h1>
+    <p class="text-gray-300 mb-4">฿{{ "%.2f"|format(featured.price) }}</p>
+    <span class="inline-block bg-red-600 group-hover:bg-red-700 transition text-white px-5 py-2 rounded font-semibold w-max">ดูเกมนี้</span>
+  </div>
+</a>
+{% else %}
+<div class="bg-gradient-to-r from-black to-red-800 text-white rounded-lg p-8 mb-6 text-center shadow-lg">
+  <h1 class="text-3xl md:text-4xl font-extrabold mb-2">🎮 ตลาดเกม มือ1 - มือ2</h1>
+  <p class="text-gray-300">ซื้อขายเกมทุกแพลตฟอร์ม ราคาดี ของแท้ ผ่านการตรวจสอบทุกชิ้น</p>
+</div>
+{% endif %}
+
+<div class="flex gap-6">
+  <!-- Filter sidebar -->
+  <aside class="w-56 shrink-0 hidden md:block">
+    <form method="get" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow space-y-4">
+      <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+      <div>
+        <h3 class="font-semibold mb-2">ประเภทเกม</h3>
+        <a href="{{ url_for('buyer.home', q=request.args.get('q')) }}"
+           class="block text-sm py-1 {{ 'text-red-700 font-medium' if not request.args.get('category') else 'text-gray-600 dark:text-gray-300' }} hover:text-red-700">
+           ทั้งหมด
+        </a>
+        {% for c in categories %}
+          <a href="{{ url_for('buyer.home', q=request.args.get('q'), category=c.id) }}"
+             class="block text-sm py-1 {{ 'text-red-700 font-medium' if request.args.get('category') == c.id else 'text-gray-600 dark:text-gray-300' }} hover:text-red-700">
+             {{ c.name }}
+          </a>
+        {% endfor %}
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">สภาพสินค้า</h3>
+        <select name="condition" onchange="this.form.submit()" class="w-full border rounded px-2 py-1 text-sm">
+          <option value="">ทั้งหมด</option>
+          <option value="new" {{ 'selected' if request.args.get('condition') == 'new' }}>มือ 1 (ใหม่)</option>
+          <option value="used" {{ 'selected' if request.args.get('condition') == 'used' }}>มือ 2 (มือสอง)</option>
+        </select>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">ช่วงราคา</h3>
+        <div class="flex gap-2">
+          <input type="number" name="min_price" placeholder="ต่ำสุด" value="{{ request.args.get('min_price', '') }}"
+                 class="w-full border rounded px-2 py-1 text-sm">
+          <input type="number" name="max_price" placeholder="สูงสุด" value="{{ request.args.get('max_price', '') }}"
+                 class="w-full border rounded px-2 py-1 text-sm">
+        </div>
+      </div>
+      <button type="submit" class="w-full bg-red-600 text-white py-1.5 rounded text-sm hover:bg-red-700">กรอง</button>
+    </form>
+  </aside>
+
+  <!-- Product grid -->
+  <div class="flex-1">
+    {% if best_sellers %}
+    <div class="mb-6">
+      <h2 class="text-lg font-bold mb-3"><span class="animate-softpulse inline-block">🔥</span> เกมขายดี</h2>
+      <div class="flex gap-3 overflow-x-auto pb-2">
+        {% for item in best_sellers %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow shrink-0 w-40 overflow-hidden">
+          <div class="aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+            {% if item.product.product_images %}
+              <img src="{{ cover_image(item.product.product_images).image_url }}" class="object-cover w-full h-full">
+            {% else %}
+              <span class="text-gray-400 dark:text-gray-500 text-xs">ไม่มีรูป</span>
+            {% endif %}
+          </div>
+          <div class="p-2">
+            <p class="text-xs line-clamp-2 h-8">{{ item.product.name }}</p>
+            <p class="text-red-700 font-bold text-sm">฿{{ "%.2f"|format(item.product.price) }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">ขายแล้ว {{ item.sold }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if products %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {% for p in products %}
+      {% set other_images = p.product_images | rejectattr('is_cover') | map(attribute='image_url') | list %}
+      <a href="{{ url_for('buyer.product_detail', product_id=p.id) }}"
+         class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition overflow-hidden hover-carousel hover-lift"
+         data-images='{{ other_images | tojson }}'>
+        <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+          {% if p.product_images %}
+            <img src="{{ cover_image(p.product_images).image_url }}" class="hover-carousel-img object-cover w-full h-full transition-opacity duration-300">
+          {% else %}
+            <span class="text-gray-400 dark:text-gray-500 text-sm">ไม่มีรูป</span>
+          {% endif %}
+          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs px-2 py-2 opacity-0 hover-carousel-name-overlay transition-opacity duration-300">
+            {{ p.name }}
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-sm text-gray-800 dark:text-gray-100 line-clamp-2 h-10">{{ p.name }}</p>
+          <p class="text-red-700 font-bold mt-1">฿{{ "%.2f"|format(p.price) }}</p>
+          <div class="flex items-center justify-between mt-1">
+            <p class="text-xs {{ 'text-red-600 font-semibold' if p.stock == 0 else 'text-gray-400 dark:text-gray-500' }}">
+              {{ 'สินค้าหมด' if p.stock == 0 else 'คงเหลือ ' ~ p.stock }}
+            </p>
+            <span class="text-xs px-1.5 py-0.5 rounded {{ 'bg-green-100 text-green-700' if p.condition == 'new' else 'bg-blue-100 text-blue-700' }}">
+              {{ 'มือ 1' if p.condition == 'new' else 'มือ 2' }}
+            </span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="text-center text-gray-500 dark:text-gray-400 py-16">ไม่พบสินค้า</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+// hover แล้วเลื่อนรูป (เฉพาะรูปที่ไม่ใช่ปก) วนไปเรื่อยๆ พร้อมโชว์ชื่อเกม
+document.querySelectorAll('.hover-carousel').forEach(card => {
+  const images = JSON.parse(card.dataset.images || '[]');
+  const img = card.querySelector('.hover-carousel-img');
+  const nameOverlay = card.querySelector('.hover-carousel-name-overlay');
+  const originalSrc = img ? img.src : null;
+  let idx = 0;
+  let timer = null;
+
+  card.addEventListener('mouseenter', () => {
+    if (nameOverlay) nameOverlay.classList.remove('opacity-0');
+    if (images.length === 0 || !img) return;
+    timer = setInterval(() => {
+      idx = (idx + 1) % images.length;
+      img.style.opacity = 0;
+      setTimeout(() => {
+        img.src = images[idx];
+        img.style.opacity = 1;
+      }, 150);
+    }, 900);
+  });
+
+  card.addEventListener('mouseleave', () => {
+    if (nameOverlay) nameOverlay.classList.add('opacity-0');
+    if (timer) clearInterval(timer);
+    idx = 0;
+    if (img && originalSrc) img.src = originalSrc;
+    if (img) img.style.opacity = 1;
+  });
+});
+</script>
+{% endblock %}

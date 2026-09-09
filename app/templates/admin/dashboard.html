@@ -1,0 +1,60 @@
+{% extends "shared/base.html" %}
+{% block title %}แดชบอร์ดแอดมิน{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">แดชบอร์ดแอดมิน</h1>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <p class="text-sm text-gray-500 dark:text-gray-400">สินค้าทั้งหมด</p>
+    <p class="text-2xl font-bold">{{ stats.total }}</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <p class="text-sm text-gray-500 dark:text-gray-400">รออนุมัติ</p>
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.pending }}</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <p class="text-sm text-gray-500 dark:text-gray-400">อนุมัติแล้ว</p>
+    <p class="text-2xl font-bold text-green-600">{{ stats.approved }}</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <p class="text-sm text-gray-500 dark:text-gray-400">ถูกปฏิเสธ</p>
+    <p class="text-2xl font-bold text-red-600">{{ stats.rejected }}</p>
+  </div>
+</div>
+
+<div class="flex justify-between items-center mb-3">
+  <h2 class="text-xl font-bold">สินค้าที่รอการอนุมัติ</h2>
+  <a href="{{ url_for('admin.all_products') }}" class="text-sm text-red-700 hover:underline">ดูสินค้าทั้งหมด →</a>
+</div>
+
+{% if pending_products %}
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+  {% for p in pending_products %}
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div class="aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+      {% if p.product_images %}
+        <img src="{{ cover_image(p.product_images).image_url }}" class="object-cover w-full h-full">
+      {% else %}
+        <span class="text-gray-400 dark:text-gray-500 text-sm">ไม่มีรูป</span>
+      {% endif %}
+    </div>
+    <div class="p-3">
+      <p class="text-sm font-medium line-clamp-2 h-10">{{ p.name }}</p>
+      <p class="text-red-700 font-bold">฿{{ "%.2f"|format(p.price) }}</p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mb-2">ร้าน {{ p.profiles.shop_name or p.profiles.full_name }}</p>
+      <div class="flex gap-2">
+        <form method="post" action="{{ url_for('admin.approve_product', product_id=p.id) }}">
+          <button type="submit" class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">อนุมัติ</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.reject_product', product_id=p.id) }}">
+          <button type="submit" class="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">ปฏิเสธ</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-center text-gray-500 dark:text-gray-400 py-16">ไม่มีสินค้ารอการอนุมัติ</p>
+{% endif %}
+{% endblock %}

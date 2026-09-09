@@ -1,0 +1,54 @@
+{% extends "shared/base.html" %}
+{% block title %}สินค้าทั้งหมด - แอดมิน{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">สินค้าทั้งหมด</h1>
+
+{% set status_label = {'pending': 'รอตรวจสอบ', 'approved': 'อนุมัติแล้ว', 'rejected': 'ถูกปฏิเสธ'} %}
+{% set status_color = {'pending': 'bg-yellow-100 text-yellow-800', 'approved': 'bg-green-100 text-green-800', 'rejected': 'bg-red-100 text-red-800'} %}
+
+<div class="flex gap-2 mb-4 text-sm">
+  <a href="{{ url_for('admin.all_products') }}" class="px-3 py-1 rounded {{ 'bg-red-600 text-white' if not status_filter else 'bg-white dark:bg-gray-800 border' }}">ทั้งหมด</a>
+  <a href="{{ url_for('admin.all_products', status='pending') }}" class="px-3 py-1 rounded {{ 'bg-red-600 text-white' if status_filter=='pending' else 'bg-white dark:bg-gray-800 border' }}">รอตรวจสอบ</a>
+  <a href="{{ url_for('admin.all_products', status='approved') }}" class="px-3 py-1 rounded {{ 'bg-red-600 text-white' if status_filter=='approved' else 'bg-white dark:bg-gray-800 border' }}">อนุมัติแล้ว</a>
+  <a href="{{ url_for('admin.all_products', status='rejected') }}" class="px-3 py-1 rounded {{ 'bg-red-600 text-white' if status_filter=='rejected' else 'bg-white dark:bg-gray-800 border' }}">ถูกปฏิเสธ</a>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-gray-50 dark:bg-gray-900">
+      <tr class="text-left text-gray-500 dark:text-gray-400">
+        <th class="py-2 px-3">สินค้า</th>
+        <th>ร้าน</th>
+        <th>ราคา</th>
+        <th>สถานะ</th>
+        <th>จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr class="border-t">
+        <td class="py-2 px-3">{{ p.name }}</td>
+        <td>{{ p.profiles.shop_name or p.profiles.full_name }}</td>
+        <td>฿{{ "%.2f"|format(p.price) }}</td>
+        <td><span class="text-xs px-2 py-0.5 rounded-full {{ status_color.get(p.status) }}">{{ status_label.get(p.status) }}</span></td>
+        <td class="flex gap-2 py-2">
+          {% if p.status != 'approved' %}
+          <form method="post" action="{{ url_for('admin.approve_product', product_id=p.id) }}">
+            <button class="text-xs text-green-600 hover:underline">อนุมัติ</button>
+          </form>
+          {% endif %}
+          {% if p.status != 'rejected' %}
+          <form method="post" action="{{ url_for('admin.reject_product', product_id=p.id) }}">
+            <button class="text-xs text-yellow-600 hover:underline">ปฏิเสธ</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{{ url_for('admin.delete_product', product_id=p.id) }}" onsubmit="return confirm('ยืนยันลบสินค้านี้?')">
+            <button class="text-xs text-red-600 hover:underline">ลบ</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

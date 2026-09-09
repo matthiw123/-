@@ -1,0 +1,56 @@
+{% extends "shared/base.html" %}
+{% block title %}เพิ่มสินค้า{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">เพิ่มสินค้าใหม่</h1>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 max-w-2xl">
+  <form method="post" enctype="multipart/form-data" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">ชื่อสินค้า</label>
+      <input type="text" name="name" required class="w-full border rounded px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">รายละเอียดสินค้า</label>
+      <textarea name="description" rows="4" class="w-full border rounded px-3 py-2"></textarea>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">ราคา (บาท)</label>
+        <input type="number" step="0.01" min="0" name="price" required class="w-full border rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">จำนวนสต๊อก</label>
+        <input type="number" min="0" name="stock" required class="w-full border rounded px-3 py-2">
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">ประเภทเกม</label>
+        <select name="category_id" class="w-full border rounded px-3 py-2">
+          <option value="">-- เลือกประเภทเกม --</option>
+          {% for c in categories %}
+          <option value="{{ c.id }}">{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">สภาพสินค้า</label>
+        <select name="condition" class="w-full border rounded px-3 py-2">
+          <option value="new">มือ 1 (ใหม่)</option>
+          <option value="used">มือ 2 (มือสอง)</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">ลิงก์วิดีโอตัวอย่าง/รีวิวเกม (ถ้ามี)</label>
+      <input type="url" name="video_url" placeholder="เช่น https://www.youtube.com/watch?v=..." class="w-full border rounded px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">รูปภาพสินค้า (เลือกได้หลายรูป)</label>
+      <input type="file" name="images" multiple accept="image/*" class="w-full border rounded px-3 py-2">
+    </div>
+    <p class="text-xs text-gray-400 dark:text-gray-500">* สินค้าใหม่จะต้องรอแอดมินตรวจสอบและอนุมัติก่อนแสดงในหน้าร้าน</p>
+    <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">บันทึกสินค้า</button>
+  </form>
+</div>
+{% endblock %}

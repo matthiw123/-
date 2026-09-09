@@ -1,0 +1,53 @@
+{% extends "shared/base.html" %}
+{% block title %}ตะกร้าสินค้า{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">ตะกร้าสินค้า</h1>
+
+{% if unavailable_count %}
+<div class="bg-yellow-50 text-yellow-800 text-sm px-4 py-2 rounded mb-4">
+  มีสินค้า {{ unavailable_count }} รายการในตะกร้าที่ผู้ขายกำลังแก้ไข/รอตรวจสอบใหม่ ชั่วคราวจะไม่แสดงในนี้ กลับมาดูใหม่ภายหลังได้ครับ
+</div>
+{% endif %}
+
+{% if items %}
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow divide-y dark:divide-gray-700">
+  {% for item in items %}
+  <div class="flex items-center gap-4 p-4">
+    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden shrink-0">
+      {% if item.products.product_images %}
+        <img src="{{ cover_image(item.products.product_images).image_url }}" class="object-cover w-full h-full">
+      {% endif %}
+    </div>
+    <div class="flex-1">
+      <p class="font-medium">{{ item.products.name }}</p>
+      <p class="text-red-700 dark:text-red-400">฿{{ "%.2f"|format(item.products.price) }} × {{ item.quantity }} = ฿{{ "%.2f"|format(item.products.price * item.quantity) }}</p>
+    </div>
+
+    <!-- ปุ่ม +/- ปรับจำนวน -->
+    <div class="flex items-center gap-2">
+      <form method="post" action="{{ url_for('buyer.update_cart_quantity', item_id=item.id) }}">
+        <input type="hidden" name="delta" value="-1">
+        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition font-bold">−</button>
+      </form>
+      <span class="w-8 text-center font-medium">{{ item.quantity }}</span>
+      <form method="post" action="{{ url_for('buyer.update_cart_quantity', item_id=item.id) }}">
+        <input type="hidden" name="delta" value="1">
+        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition font-bold">+</button>
+      </form>
+    </div>
+
+    <form method="post" action="{{ url_for('buyer.remove_from_cart', item_id=item.id) }}">
+      <button type="submit" class="text-red-500 text-sm hover:underline">ลบ</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mt-4 flex items-center justify-between">
+  <span class="text-lg font-bold">รวมทั้งหมด: ฿{{ "%.2f"|format(total) }}</span>
+  <a href="{{ url_for('buyer.checkout') }}" class="bg-red-600 hover:bg-red-700 transition text-white px-6 py-2 rounded">ดำเนินการสั่งซื้อ</a>
+</div>
+{% else %}
+<p class="text-center text-gray-500 dark:text-gray-400 py-16">ตะกร้าว่างเปล่า</p>
+{% endif %}
+{% endblock %}

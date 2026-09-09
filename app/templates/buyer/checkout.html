@@ -1,0 +1,45 @@
+{% extends "shared/base.html" %}
+{% block title %}สั่งซื้อสินค้า{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">ยืนยันคำสั่งซื้อ</h1>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 max-w-lg">
+  <h2 class="font-semibold mb-2">รายการสินค้า</h2>
+  <div class="divide-y mb-4">
+    {% for item in items %}
+    <div class="flex justify-between py-2 text-sm">
+      <span>{{ item.products.name }} × {{ item.quantity }}</span>
+      <span>฿{{ "%.2f"|format(item.products.price * item.quantity) }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="text-right font-bold text-lg mb-6">รวมทั้งหมด: ฿{{ "%.2f"|format(total) }}</p>
+
+  <form method="post">
+    <label class="block text-sm font-medium mb-2">เลือกวิธีชำระเงิน</label>
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <label class="cursor-pointer">
+        <input type="radio" name="payment_method" value="truemoney" required class="hidden peer">
+        <div class="border-2 border-gray-200 dark:border-gray-700 peer-checked:border-red-600 peer-checked:bg-red-50 rounded-lg p-4 text-center transition">
+          <p class="text-2xl mb-1">📱</p>
+          <p class="text-sm font-medium">TrueMoney Wallet</p>
+        </div>
+      </label>
+      <label class="cursor-pointer">
+        <input type="radio" name="payment_method" value="promptpay" required class="hidden peer">
+        <div class="border-2 border-gray-200 dark:border-gray-700 peer-checked:border-red-600 peer-checked:bg-red-50 rounded-lg p-4 text-center transition">
+          <p class="text-2xl mb-1">🏦</p>
+          <p class="text-sm font-medium">PromptPay</p>
+        </div>
+      </label>
+    </div>
+
+    <label class="block text-sm font-medium mb-1">รหัสยืนยันการชำระเงิน (6 หลัก)</label>
+    <input type="text" name="payment_code" inputmode="numeric" pattern="\d{6}" maxlength="6" required
+           placeholder="เช่น 123456" class="w-full border rounded px-3 py-2 mb-1 tracking-widest text-center text-lg">
+    <p class="text-xs text-gray-400 dark:text-gray-500 mb-4">* หน้านี้เป็นการจำลองระบบชำระเงิน กรอกตัวเลข 6 หลักอะไรก็ได้เพื่อยืนยัน (ไม่มีการเก็บข้อมูลนี้ไว้)</p>
+
+    <button type="submit" class="w-full bg-red-600 text-white py-2.5 rounded hover:bg-red-700">ยืนยันการชำระเงิน</button>
+  </form>
+</div>
+{% endblock %}

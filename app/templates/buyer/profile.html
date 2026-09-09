@@ -1,0 +1,68 @@
+{% extends "shared/base.html" %}
+{% block title %}โปรไฟล์ของฉัน{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">โปรไฟล์ของฉัน</h1>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+  <form method="post">
+    <div class="flex items-center gap-4 mb-4">
+      <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-3xl">
+        {{ profile.avatar or '🎮' }}
+      </div>
+      <div>
+        <p class="font-semibold">{{ profile.full_name }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ profile.email }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 uppercase mt-0.5">{{ profile.role }}</p>
+      </div>
+    </div>
+
+    <label class="block text-sm font-medium mb-1">ชื่อที่แสดง</label>
+    <input type="text" name="full_name" value="{{ profile.full_name }}" required class="w-full border rounded px-3 py-2 mb-4">
+
+    {% if profile.role == 'seller' %}
+    <label class="block text-sm font-medium mb-1">ชื่อร้านค้า</label>
+    <input type="text" name="shop_name" value="{{ profile.shop_name or '' }}" class="w-full border rounded px-3 py-2 mb-4">
+    {% endif %}
+
+    <label class="block text-sm font-medium mb-2">เลือกรูปโปรไฟล์ (เล่นๆ)</label>
+    <div class="flex flex-wrap gap-2 mb-4">
+      {% for a in avatar_choices %}
+      <label class="cursor-pointer">
+        <input type="radio" name="avatar" value="{{ a }}" class="hidden peer" {{ 'checked' if profile.avatar == a }}>
+        <span class="w-10 h-10 flex items-center justify-center text-xl rounded-full border-2 border-transparent peer-checked:border-red-600 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200">{{ a }}</span>
+      </label>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">บันทึก</button>
+  </form>
+</div>
+
+{% if profile.role == 'buyer' %}
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+  <h2 class="text-xl font-bold mb-4">เกมที่เคยซื้อ / โค้ดยืนยัน</h2>
+  {% if purchased %}
+  <div class="divide-y">
+    {% for item in purchased %}
+    <div class="flex items-center gap-4 py-3">
+      <div class="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden shrink-0">
+        {% if item.products.product_images %}
+          <img src="{{ cover_image(item.products.product_images).image_url }}" class="object-cover w-full h-full">
+        {% endif %}
+      </div>
+      <div class="flex-1">
+        <p class="text-sm font-medium">{{ item.products.name }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500">{{ item.orders.created_at[:10] }} · สถานะ: {{ item.orders.status }}</p>
+        {% if item.activation_code %}
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-mono">โค้ด (จำลอง): {{ item.activation_code }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-gray-400 dark:text-gray-500 text-sm">ยังไม่เคยซื้อเกมเลย</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
