@@ -43,7 +43,7 @@
 
   <nav class="bg-black text-white shadow border-b-2 border-red-700">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="{{ url_for('buyer.home') }}" class="text-xl font-bold text-red-600 hover:text-red-400 transition-colors">หน้าแรก</a>
+      <a href="{{ url_for('buyer.home') }}" class="text-xl font-bold text-red-600 hover:text-red-400 transition-colors">ญ</a>
 
       <div class="relative flex-1 max-w-md mx-4 hidden md:block">
         <form action="{{ url_for('buyer.home') }}" method="get" id="search-form" class="flex" autocomplete="off">
@@ -98,6 +98,17 @@
     งานครูนัท
   </footer>
 
+  <!-- Modal ยืนยันแบบโมเดิร์น (ใช้แทน confirm() ของเบราว์เซอร์ทั่วทั้งเว็บ) -->
+  <div id="confirm-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full text-center animate-fadein">
+      <p id="confirm-modal-message" class="text-gray-800 dark:text-gray-100 font-medium mb-5">ยืนยันการทำรายการ?</p>
+      <div class="flex gap-3">
+        <button type="button" id="confirm-modal-cancel" class="flex-1 border border-gray-300 dark:border-gray-600 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition">ยกเลิก</button>
+        <button type="button" id="confirm-modal-ok" class="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700 text-sm transition">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // สลับโหมดมืด/สว่าง
     (function () {
@@ -112,6 +123,43 @@
         localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
         updateIcon();
       });
+    })();
+  </script>
+
+  <script>
+    // ป็อปอัพยืนยันแบบโมเดิร์น ใช้แทน confirm() ของเบราว์เซอร์
+    // วิธีใช้: เติม data-confirm="ข้อความ" ในฟอร์มที่ต้องการให้ถามยืนยันก่อนส่ง
+    (function () {
+      const modal = document.getElementById('confirm-modal');
+      const msgEl = document.getElementById('confirm-modal-message');
+      const okBtn = document.getElementById('confirm-modal-ok');
+      const cancelBtn = document.getElementById('confirm-modal-cancel');
+      let pendingForm = null;
+
+      function closeModal() {
+        modal.classList.add('hidden');
+        pendingForm = null;
+      }
+
+      document.querySelectorAll('form[data-confirm]').forEach(form => {
+        form.addEventListener('submit', function (e) {
+          if (form.dataset.confirmed === 'true') return;
+          e.preventDefault();
+          pendingForm = form;
+          msgEl.textContent = form.dataset.confirm;
+          modal.classList.remove('hidden');
+        });
+      });
+
+      okBtn.addEventListener('click', () => {
+        if (pendingForm) {
+          pendingForm.dataset.confirmed = 'true';
+          pendingForm.submit();
+        }
+        closeModal();
+      });
+      cancelBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
     })();
   </script>
 

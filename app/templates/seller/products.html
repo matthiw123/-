@@ -27,7 +27,7 @@
       <span class="text-xs px-2 py-0.5 rounded-full {{ status_color.get(p.status) }}">{{ status_label.get(p.status) }}</span>
       <div class="flex gap-2 mt-2">
         <a href="{{ url_for('seller.edit_product', product_id=p.id) }}" class="text-xs text-blue-600 hover:underline">แก้ไข</a>
-        <form method="post" action="{{ url_for('seller.delete_product', product_id=p.id) }}" onsubmit="return confirm('ยืนยันลบสินค้านี้?')">
+        <form method="post" action="{{ url_for('seller.delete_product', product_id=p.id) }}" data-confirm="ยืนยันลบสินค้านี้?">
           <button type="submit" class="text-xs text-red-600 hover:underline">ลบ</button>
         </form>
       </div>

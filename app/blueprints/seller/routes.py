@@ -188,10 +188,13 @@ def edit_product(product_id):
 @role_required("seller")
 def delete_product(product_id):
     supabase = get_supabase()
-    supabase.table("products").delete().eq(
-        "id", product_id
-    ).eq("seller_id", session["user_id"]).execute()
-    flash("ลบสินค้าแล้ว", "info")
+    try:
+        supabase.table("products").delete().eq(
+            "id", product_id
+        ).eq("seller_id", session["user_id"]).execute()
+        flash("ลบสินค้าแล้ว", "info")
+    except Exception:
+        flash("ลบไม่ได้ เพราะสินค้านี้เคยมีคนสั่งซื้อไปแล้ว (มีประวัติคำสั่งซื้อผูกอยู่)", "danger")
     return redirect(url_for("seller.my_products"))
 
 

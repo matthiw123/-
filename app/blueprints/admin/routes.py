@@ -65,6 +65,9 @@ def reject_product(product_id):
 @role_required("admin")
 def delete_product(product_id):
     supabase = get_supabase_admin()
-    supabase.table("products").delete().eq("id", product_id).execute()
-    flash("ลบสินค้าแล้ว", "info")
+    try:
+        supabase.table("products").delete().eq("id", product_id).execute()
+        flash("ลบสินค้าแล้ว", "info")
+    except Exception:
+        flash("ลบไม่ได้ เพราะสินค้านี้เคยมีคนสั่งซื้อไปแล้ว (มีประวัติคำสั่งซื้อผูกอยู่)", "danger")
     return redirect(request.referrer or url_for("admin.dashboard"))
