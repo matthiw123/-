@@ -16,8 +16,12 @@ t@gmail.com , 123456
 Assmin , 123qwe
 ```
 
-Supabase-----
+Supabase
 https://ztpttvjbmbniflsgonlq.supabase.co
+postgresql://postgres:[YOUR-PASSWORD]@db.ztpttvjbmbniflsgonlq.supabase.co:5432/postgres
+supabase login
+supabase init
+supabase link --project-ref ztpttvjbmbniflsgonlq
 
 ## ขั้นตอนrun
 
