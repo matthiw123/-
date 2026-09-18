@@ -17,11 +17,7 @@ Assmin , 123qwe
 ```
 
 Supabase
-https://ztpttvjbmbniflsgonlq.supabase.co
-postgresql://postgres:[YOUR-PASSWORD]@db.ztpttvjbmbniflsgonlq.supabase.co:5432/postgres
-supabase login
-supabase init
-supabase link --project-ref ztpttvjbmbniflsgonlq
+https://supabase.com/dashboard/project/ztpttvjbmbniflsgonlq
 
 ## ขั้นตอนrun
 
